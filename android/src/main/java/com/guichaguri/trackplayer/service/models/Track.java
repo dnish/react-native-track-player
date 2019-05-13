@@ -90,6 +90,14 @@ public class Track {
 
         contentType = bundle.getString("contentType");
         userAgent = bundle.getString("userAgent");
+
+        setMetadata(context, bundle, ratingType);
+
+        queueId = System.currentTimeMillis();
+        originalItem = bundle;
+    }
+
+    public void setMetadata(Context context, Bundle bundle, int ratingType) {
         artwork = Utils.getUri(context, bundle, "artwork");
 
         title = bundle.getString("title");
@@ -100,9 +108,9 @@ public class Track {
         duration = Utils.toMillis(bundle.getDouble("duration", 0));
 
         rating = Utils.getRating(bundle, "rating", ratingType);
-
-        queueId = System.currentTimeMillis();
-        originalItem = bundle;
+        
+        if (originalItem != null && originalItem != bundle)
+            originalItem.putAll(bundle);
     }
 
     public MediaMetadataCompat.Builder toMediaMetadata() {
@@ -116,7 +124,9 @@ public class Track {
         builder.putString(METADATA_KEY_MEDIA_URI, uri.toString());
         builder.putString(METADATA_KEY_MEDIA_ID, id);
 
-        builder.putLong(METADATA_KEY_DURATION, duration);
+        if (duration > 0) {
+            builder.putLong(METADATA_KEY_DURATION, duration);
+        }
 
         if (artwork != null) {
             builder.putString(METADATA_KEY_ART_URI, artwork.toString());
